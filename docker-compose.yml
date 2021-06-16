@@ -5,7 +5,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 10.2.0.0/24
+        - subnet: 172.16.0.0/24
 
 services:
   unbound:
@@ -17,7 +17,7 @@ services:
       - "./unbound:/opt/unbound/etc/unbound/"
     networks:
       private_network:
-        ipv4_address: 10.2.0.200
+        ipv4_address: 172.16.0.200
 
   wireguard:
     depends_on: [unbound, pihole]
@@ -33,8 +33,8 @@ services:
       - SERVERPORT=51820
       #- SERVERURL=my.ddns.net #optional - For use with DDNS (Uncomment to use)
       - PEERS=1 # How many peers to generate for you (clients)
-      - PEERDNS=10.2.0.100 # Set it to point to pihole
-      - INTERNAL_SUBNET=10.6.0.0
+      - PEERDNS=172.16.0.100 # Set it to point to pihole
+      - INTERNAL_SUBNET=172.17.0.0
       
     volumes:
       - ./wireguard:/config
@@ -42,15 +42,15 @@ services:
     ports:
       - "51820:51820/udp"
     dns:
-      - 10.2.0.100 # Points to pihole
-      - 10.2.0.200 # Points to unbound
+      - 172.16.0.100 # Points to pihole
+      - 172.16.0.200 # Points to unbound
     sysctls:
       - net.ipv4.conf.all.src_valid_mark=1
 
     restart: unless-stopped
     networks:
       private_network:
-        ipv4_address: 10.2.0.3
+        ipv4_address: 172.16.0.3
 
   pihole:
     depends_on: [unbound]
@@ -60,13 +60,13 @@ services:
     hostname: pihole
     dns:
       - 127.0.0.1
-      - 10.2.0.200 # Points to unbound
+      - 172.16.0.200 # Points to unbound
     environment:
       TZ: "America/Los_Angeles"
       WEBPASSWORD: "" # Blank password - Can be whatever you want.
-      ServerIP: 10.1.0.100 # Internal IP of pihole
-      DNS1: 10.2.0.200 # Unbound IP
-      DNS2: 10.2.0.200 # If we don't specify two, it will auto pick google.
+      ServerIP: 172.18.0.100 # Internal IP of pihole
+      DNS1: 172.16.0.200 # Unbound IP
+      DNS2: 172.16.0.200 # If we don't specify two, it will auto pick google.
     # Volumes store your data between container upgrades
     volumes:
       - "./etc-pihole/:/etc/pihole/"
@@ -77,4 +77,4 @@ services:
       - NET_ADMIN
     networks:
       private_network:
-        ipv4_address: 10.2.0.100
+        ipv4_address: 172.16.0.100
